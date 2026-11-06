@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stamatios Alexiou >_ Portfolio</title>
+  
+  <meta property="og:title" content="Stamatios Alexiou - Software Engineer & AI">
+  <meta property="og:description" content="I build systems that perceive, learn and interact. Welcome to my interactive portfolio.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://yourwebsite.com/images/preview.jpg"> <!-- Άλλαξε το URL όταν ανέβει -->
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+  
+  <style>
+    :root {
+      --bg: #CFE3FF; --ink: #1A1440; --panel: #FFF6D6; --line: #1A1440;
+      --c1: #E08A00; --c2: #00897F; --c3: #D6336C; --c4: #4C4CE0; --star: #1A1440;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #140F33; --ink: #F3EEFF; --panel: #241C57; --line: #F3EEFF;
+        --c1: #FFC93C; --c2: #36E2D2; --c3: #FF6FA5; --c4: #8E9BFF; --star: #F3EEFF;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #140F33; --ink: #F3EEFF; --panel: #241C57; --line: #F3EEFF;
+      --c1: #FFC93C; --c2: #36E2D2; --c3: #FF6FA5; --c4: #8E9BFF; --star: #F3EEFF;
+    }
+    
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 1.6rem/1.2 VT323, "Courier New", monospace; overflow-x: hidden; }
+    .px { font-family: "Press Start 2P", "Courier New", monospace; line-height: 1.5; }
+    canvas { image-rendering: pixelated; }
+    :focus-visible { outline: 4px dashed var(--c3); outline-offset: 3px; }
+    
+    #hud { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 4px solid var(--line); padding: calc(.5rem + env(safe-area-inset-top, 0px)) 1rem .5rem; }
+    #hud div { max-width: 1000px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; font-size: 1.4rem; }
+    .px.s { font-size: .6rem; }
+    .xp { flex: 1; min-width: 120px; height: 18px; border: 3px solid var(--line); background: var(--bg); }
+    .xp i { display: block; height: 100%; width: 0; background: var(--c2); transition: width .5s steps(8); }
+    
+    button, .btn { font: inherit; color: var(--ink); background: var(--panel); border: 3px solid var(--line); box-shadow: 4px 4px 0 var(--line); padding: .2rem .8rem; cursor: pointer; text-decoration: none; }
+    button:active, .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--line); }
+    
+    #title { position: relative; min-height: calc(100vh - 60px); display: grid; place-items: center; text-align: center; overflow: hidden; padding: 2rem 1rem; }
+    #stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #title > div { position: relative; }
+    
+    h1 { font-size: clamp(1.4rem, 6.5vw, 3.6rem); margin: 0; color: var(--c1); text-shadow: 4px 4px 0 var(--c3), 8px 8px 0 var(--c4); }
+    .sub { margin: 2.2rem 0 1.5rem; font-size: 1.8rem; }
+    .blink { animation: bl 1s steps(2) infinite; font-size: .9rem; display: inline-block; padding: 1rem 1.4rem; }
+    @keyframes bl { 50% { opacity: 0; } }
+    
+    #hero { width: 96px; height: 96px; margin: 2rem auto 0; display: block; animation: bob 1s steps(2) infinite; }
+    @keyframes bob { 50% { transform: translateY(-8px); } }
+    
+    section.w { max-width: 1000px; margin: 0 auto; padding: 4rem 1rem; }
+    h2 { font-size: clamp(.9rem, 3vw, 1.3rem); margin: 0 0 2rem; }
+    
+    #map { position: relative; display: flex; flex-wrap: wrap; justify-content: space-evenly; gap: .5rem; row-gap: 6.8rem; padding-top: 90px; min-height: 230px; }
+    #tabs { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    #tabs button { font-size: 1.4rem; }
+    #tabs button.on { background: var(--c1); color: #1A1440; }
+    
+    .node[hidden] { display: none; }
+    .node { min-width: 110px; position: relative; display: flex; flex-direction: column; align-items: center; gap: .6rem; background: none; border: 0; box-shadow: none; color: var(--ink); padding: .3rem; }
+    #map.solo:before, #map.many:before { display: none; }
+    #map:before { content: ""; position: absolute; left: 25%; right: 25%; top: calc(90px + 36px); border-top: 6px dotted var(--line); opacity: .5; }
+    
+    .node canvas { width: clamp(48px, 11vw, 72px); height: clamp(48px, 11vw, 72px); background: var(--panel); border: 4px solid var(--hue); padding: 6px; }
+    .node.on canvas { box-shadow: 0 0 0 4px var(--hue); }
+    .node span { font-size: 1.25rem; }
+    
+    /* Veltiwsh gia ta cleared levels */
+    .node.cleared::after {
+      content: 'CLEAR';
+      position: absolute;
+      top: -5px;
+      right: 0;
+      background: var(--c1);
+      color: #1A1440;
+      font-family: 'Press Start 2P', monospace;
+      font-size: .5rem;
+      padding: .2rem .4rem;
+      border: 2px solid var(--line);
+      transform: rotate(8deg);
+      z-index: 2;
+      pointer-events: none;
+      box-shadow: 2px 2px 0 var(--line);
+    }
+    .node.cleared canvas { opacity: 0.8; }
+    
+    #me { position: absolute; top: 10px; left: 0; width: 64px; height: 64px; transition: left .45s steps(6); pointer-events: none; }
+    
+    #dlg { margin-top: 2.5rem; background: var(--panel); border: 4px solid var(--line); box-shadow: 8px 8px 0 var(--line); padding: 1.4rem; min-height: 250px; }
+    #dlg h3 { margin: 0 0 1rem; font-size: .85rem; color: var(--hue); }
+    
+    #txt { font-size: 1.7rem; line-height: 1.4; min-height: 5.2em; letter-spacing: 0.5px; }
+    
+    .stats { display: grid; gap: .4rem; margin: 1rem 0; }
+    .stats div { display: grid; grid-template-columns: 7.5rem 1fr; gap: .6rem; align-items: center; }
+    .bar { height: 14px; border: 3px solid var(--line); background: var(--bg); }
+    .bar i { display: block; height: 100%; background: var(--hue); }
+    
+    .items { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .items b { font-weight: 400; border: 3px solid var(--hue); padding: 0 .5rem; color: var(--hue); }
+    
+    #inv { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .8rem; }
+    #inv div { background: var(--panel); border: 4px solid var(--line); padding: .8rem; text-align: center; }
+    #inv small { display: block; font-size: 1.2rem; opacity: .7; }
+    
+    .card { background: var(--panel); border: 4px solid var(--line); box-shadow: 8px 8px 0 var(--line); padding: 1.4rem; margin-bottom: 3rem; }
+    .card p { font-size: 1.7rem; line-height: 1.25; margin: .4rem 0 1rem; }
+    .card h3 { margin: 0 0 .8rem; font-size: .8rem; }
+    
+    .show { margin-top: 1rem; }
+    .frame { width: min(100%, calc(68vh * 1.77)); aspect-ratio: 2000/1128; overflow: hidden; background: var(--bg); border: 4px solid var(--hue); position: relative; }
+    .frame img { display: block; width: 100%; height: 100%; object-fit: contain; cursor: zoom-in; }
+    [hidden] { display: none !important; }
+    .frame .bef { position: absolute; inset: 0; }
+    
+    #frm[data-cmp] { touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none; }
+    #frm[data-cmp] img { pointer-events: none; -webkit-user-drag: none; }
+    
+    #hd { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--hue); pointer-events: none; }
+    #hd:after { content: '<>'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--hue); color: #1A1440; font-family: 'Press Start 2P', monospace; font-size: .7rem; padding: .8rem .5rem; white-space: nowrap; box-shadow: 0 0 0 3px #1A1440; }
+    
+    .lab { position: absolute; top: 8px; background: var(--hue); color: #1A1440; font-family: 'Press Start 2P', monospace; font-size: .55rem; padding: .35rem .5rem; pointer-events: none; }
+    .lab.lb { left: 8px; }
+    .lab.la { right: 8px; }
+    
+    .ctl { display: flex; gap: .6rem; align-items: center; margin: .7rem 0; flex-wrap: wrap; }
+    .ctl span { font-size: 1.4rem; }
+    
+    #lb { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; place-items: center; z-index: 20; cursor: zoom-out; }
+    #lb.on { display: grid; }
+    #lb img { max-width: 92vw; max-height: 88vh; border: 4px solid var(--c1); }
+    
+    .grp h3 { margin: 0 0 .8rem; font-size: .7rem; color: var(--hue); }
+    .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .7rem; margin-bottom: 1.8rem; }
+    .slots div { background: var(--panel); border: 3px solid var(--hue); padding: .8rem .4rem; text-align: center; word-break: break-word; }
+    
+    #cont { text-align: center; }
+    #cont .btn { display: inline-block; font-size: .9rem; padding: 1.2rem 1.6rem; margin-top: 1rem; }
+    #cont.hot .btn { background: var(--c1); color: #1A1440; animation: bl 1s steps(2) infinite; }
+    
+    #toast { position: fixed; left: 50%; bottom: calc(1.2rem + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 200%); background: var(--c1); color: #1A1440; border: 4px solid var(--line); padding: .8rem 1.2rem; font-size: .6rem; transition: transform .3s steps(5); z-index: 9; max-width: 92vw; text-align: center; }
+    #toast.show { transform: translate(-50%, 0); }
+    
+    section.w { display: none; }
+    body[data-stage="1"] #card, body[data-stage="2"] #world, body[data-stage="3"] #invsec, body[data-stage="3"] #cont { display: block; }
+    body:not([data-stage="0"]) #title { display: none; }
+    
+    .px.big { font-size: .8rem; padding: 1.1rem 1.4rem; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    
+    #cue { position: fixed; right: max(.7rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 30; background: var(--panel); color: var(--ink); border: 3px solid var(--line); box-shadow: 4px 4px 0 var(--line); padding: .8rem .55rem; display: flex; flex-direction: column; align-items: center; gap: .5rem; cursor: pointer; font-family: "Press Start 2P", "Courier New", monospace; font-size: .5rem; }
+    #cue[hidden] { display: none; }
+    #cue:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--line); }
+    #cue i { font-style: normal; font-size: 1rem; line-height: 1; animation: cuebob 1s steps(2) infinite; }
+    @keyframes cuebob { 50% { transform: translateY(6px); } }
+    @media (prefers-reduced-motion: reduce) { #cue i { animation: none; } }
+  </style>
+</head>
+
+<body data-stage="0">
+
+  <div id="hud">
+    <div>
+      <span class="px s">STAMATIOS A.</span>
+      <span class="px s" id="lv">LV 1</span>
+      <span class="xp" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></span>
+      <button id="sfx" type="button">SFX: on</button>
+      <button id="theme" type="button">Day/Night</button>
+    </div>
+  </div>
+
+  <header id="title">
+    <canvas id="stars" aria-hidden="true"></canvas>
+    <div>
+      <h1 class="px">STAMATIOS<br>ALEXIOU</h1>
+      <p class="sub">TUC ECE graduate and software engineer. I build systems that perceive, learn and interact.</p>
+      <canvas id="hero" width="8" height="8" aria-hidden="true"></canvas>
+      <a class="btn px blink" id="start" href="#world" role="button">PRESS START</a>
+    </div>
+  </header>
+
+  <section class="w" id="card">
+    <h2 class="px">PLAYER CARD</h2>
+    <div class="card" style="--hue:var(--c4)">
+      <h3 class="px">Stamatios Alexiou | Class: Software Engineer | Guild: TUC, ECE</h3>
+      <p>I love engineering systems that don't just execute code. They perceive their environment, learn from complex data and interact seamlessly with humans.</p>
+      <div class="items">
+        <b>XR &amp; Gaze Interaction</b>
+        <b>Robotics &amp; Autonomous Agents</b>
+        <b>Computer Vision</b>
+        <b>Generative AI &amp; Deep Learning</b>
+        <b>Game Development</b>
+        <b>Software Engineering</b>
+      </div>
+    </div>
+    <p style="text-align: center;">
+      <button id="toWorld" type="button" class="px big">START GAME &gt;</button>
+    </p>
+  </section>
+
+  <section class="w" id="invsec">
+    <h2 class="px">INVENTORY</h2>
+    <div id="kit">
+      <div class="grp" style="--hue:var(--c1)">
+        <h3 class="px">Languages</h3>
+        <div class="slots">
+          <div class="px s">PYTHON</div><div class="px s">C</div><div class="px s">C++</div><div class="px s">C#</div><div class="px s">JAVA</div><div class="px s">SCALA</div><div class="px s">MATLAB</div>
+        </div>
+      </div>
+      <div class="grp" style="--hue:var(--c4)">
+        <h3 class="px">AI, Machine Learning &amp; Vision</h3>
+        <div class="slots">
+          <div class="px s">PYTORCH</div><div class="px s">TENSORFLOW</div><div class="px s">SCIKIT-LEARN</div><div class="px s">OPENCV</div><div class="px s">SCIPY</div><div class="px s">PANDAS</div><div class="px s">NUMPY</div><div class="px s">MATPLOTLIB</div>
+        </div>
+      </div>
+      <div class="grp" style="--hue:var(--c2)">
+        <h3 class="px">Robotics &amp; Spatial Computing</h3>
+        <div class="slots">
+          <div class="px s">ROS</div><div class="px s">UNITY</div><div class="px s">BLENDER</div>
+        </div>
+      </div>
+      <div class="grp" style="--hue:var(--c3)">
+        <h3 class="px">Data, Backend &amp; Tools</h3>
+        <div class="slots">
+          <div class="px s">SPARK</div><div class="px s">HADOOP</div><div class="px s">POSTGRES</div><div class="px s">SQLITE</div><div class="px s">ANACONDA</div>
+        </div>
+      </div>
+      <div class="grp" style="--hue:var(--c1)">
+        <h3 class="px">Web</h3>
+        <div class="slots">
+          <div class="px s">HTML5</div><div class="px s">CSS3</div><div class="px s">BOOTSTRAP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="w" id="world">
+    <h2 class="px">WORLD MAP: choose a world</h2>
+    <div id="tabs" role="group" aria-label="Worlds"></div>
+    <div id="map">
+      <canvas id="me" width="8" height="8" aria-hidden="true"></canvas>
+    </div>
+    <div id="dlg" aria-live="polite">
+      <h3 class="px" id="dt">Use arrow keys or tap a level.</h3>
+      <div id="txt"></div>
+      <div id="more"></div>
+    </div>
+    <p id="gate" style="text-align: center; margin-top: 2rem;">
+      <button id="toEnd" type="button" class="px big">CONTINUE &gt; (0/20 CLEARED)</button>
+    </p>
+  </section>
+
+  <section class="w" id="cont">
+    <h2 class="px">CONTINUE?</h2>
+    <p>Looking for a player two?</p>
+    
+    <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem;">
+      <a class="btn px" href="mailto:stamatiosalexiou@gmail.com">EMAIL</a>  
+      <a class="btn px" href="https://linkedin.com/in/stamatios-alexiou-42447a2a7" target="_blank" rel="noopener">LINKEDIN</a> 
+      <a class="btn px" href="https://github.com/salexiou" target="_blank" rel="noopener">GITHUB</a>
+    </div>
+
+    <p style="text-align: center; margin-top: 4rem;">
+      <button id="backToGame" type="button" class="px big">&lt; BACK TO MAP</button>
+    </p>
+  </section>
+
+  <div id="lb" role="dialog" aria-label="Screenshot"><img alt=""></div>
+  <div id="toast" class="px" role="status"></div>
+
+  <button id="cue" type="button" aria-label="Scroll down for more content" hidden>MORE<i aria-hidden="true">&#9660;</i></button>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+
+var S={
+mug:["..3.3...",".33333..","2222222.","222222.2","222222.2","222222.2",".22222.2","..1111.."],
+drone:["2......2","12....21",".122221.","..2332..","..2332..",".122221.","12....21","2......2"],
+web:["22222222","23333332","2......2","2.1111.2","2.1..1.2","2.1111.2","2......2","22222222"],
+bot:["...33...","...11...",".222222.","2.3223.2","22222222",".222222.",".2.22.2.",".2....2."],
+ball:["..2222..",".233332.","23322332","23222232","23322332","23333332",".233332.","..2222.."],
+epuck:["..2222..",".2....2.","2..33..2","2.3333.2","2.3333.2","2..33..2",".2....2.","..2222.."],
+alpha:["..2222..",".233332.",".2.33.2.",".233332.","..2222..",".222222.","22.22.22","..2..2.."],
+spark:[".....33.","....33..","...33...","..3333..","....33..","...33...","..33....","..3....."],
+game:["22222222","2......2","2.3..3.2","2......2","2.3333.2","2......2","2......2","22222222"],
+db:["..3333..",".322223.","..2222..",".333333.",".322223.","..2222..",".322223.","..3333.."],
+disk:["..2222..",".233332.","..2222..","2......2","..2222..",".233332.","..2222..","........"],
+kd:["...11...","..1331..","...11...",".11..11.","1331.133","1331.133",".11...11","........"],
+bplus:["...22...","..2222..","11.22.11","11.22.11","........","22.22.22","22.22.22","22.22.22"],
+tweet:["22222222","23333332","23333332","22222222","..22....",".2......","........","........"],
+pca:["......33",".....33.","..2.33..",".2.33.2.","..33.2..",".33.2...","33......","11111111"],
+cnn:["3..2..3.","33.22.33","3..2..3.","33.22.33","3..2..3.","33.22.33","3..2..3.","........"],
+mesh:["..2222..",".2....2.","2.2222.2","2.2..2.2","2.2222.2","2....2.2",".2....2.","..2222.."],
+noise:["3.2.3.1.",".1.3.2.3","2.3.1.3.",".3.2.3.2","3.1.3.2.",".2.3.1.3","1.3.2.3.",".3.1.3.2"],
+hex:["..2222..",".233332.","23333332","23311332","23311332","23333332",".233332.","..2222.."],
+arm:[".....3.3",".....222","....22..","...22...","..22....","..2.....",".111111.","12222221"],
+hero:["...3....","...1....",".222222.",".213312.",".222222.","2.2332.2","2.2222.2",".11..11."]};
+
+function draw(cv,k,hue){
+  var x=cv.getContext('2d'),c={1:css('--ink'),2:hue,3:'#fff'};
+  x.clearRect(0,0,8,8);
+  S[k].forEach(function(r,y){
+    for(var i=0;i<8;i++){
+      var ch=r[i];
+      if(ch!=='.'){x.fillStyle=c[ch];x.fillRect(i,y,1,1)}
+    }
+  });
+}
+
+var L=[
+{w:0,k:'mug',h:'--c1',n:'1-1 Tavern PDA',t:'A Flutter and Firebase point-of-sale app built for a tavern. Waiters take orders at the table, tickets print by station, bills split between cash and card, and each shift closes with a Z report.',st:[['Complexity',80],['Fun',90]],it:['Flutter','Firebase','Thermal printing','Z reports','Real-time'],shots:[
+  {src:"images/01.jpg",cap:"Login: pick a user and enter the password"},
+  {src:"images/02.jpg",cap:"Choose a dining area"},
+  {src:"images/03.jpg",cap:"Reserve a table: name, guests and time"},
+  {src:"images/04.jpg",cap:"Automatic cover charge and water per guest"},
+  {src:"images/05.jpg",cap:"Take an order by category, with search"},
+  {src:"images/06.jpg",cap:"Treat a dish: free from the shop or to another table"},
+  {src:"images/07.jpg",cap:"Quick notes per dish, plus free text"},
+  {src:"images/08.jpg",cap:"Weighed items: pick kilos or type a weight"},
+  {src:"images/09.jpg",cap:"Order summary before it goes to the printers"},
+  {src:"images/10.jpg",cap:"Table actions: add, move or merge, bill"},
+  {src:"images/11.jpg",cap:"The bill: discount, split, cash or card"},
+  {src:"images/12.jpg",cap:"Partial payment: choose which items are paid"},
+  {src:"images/13.jpg",cap:"Tip: quick amounts or custom"},
+  {src:"images/14.jpg",cap:"Settled bills for the current shift"},
+  {src:"images/15.jpg",cap:"Close the shift and issue the Z report"},
+  {src:"images/16.jpg",cap:"Admin settings: shift, printers, menu, staff, reports"},
+  {src:"images/17.jpg",cap:"Printer IPs for the grill and the kitchen"},
+  {src:"images/18.jpg",cap:"Menu management by category"},
+  {src:"images/19.jpg",cap:"Staff management with roles (PINs hidden)"}
+]},
+{w:1,k:'drone',h:'--c2',n:'2-1 UAV Traffic Tracking',t:'A ROS 2 pipeline that watches traffic from a drone. YOLOv8 detects cars, trucks, buses and motorcycles, a tracker gives each one an ID and estimates its speed from pixel motion with a perspective correction, and a logger stores every vehicle\'s top speed in SQLite. A mock drone replays a test video, while the camera and telemetry nodes accept a live video stream over TCP and DJI telemetry over UDP. On the test run it logged 52 vehicles (49 cars, 2 trucks, 1 bus), and a pandas script flags anything above 70 km/h. Speeds are estimates from an approximate calibration, not measured ground truth.',st:[['Complexity',85],['Fun',75]],it:['ROS 2','Python','YOLOv8','OpenCV','SQLite','pandas','TCP / UDP'],vid:'images/uav/video.mp4',shots:[
+  {src:"images/uav/node-graph.png",cap:"ROS 2 node graph: video and telemetry in, YOLOv8 detection, tracking, SQLite logging"},
+  {src:"images/uav/dashboard.png",cap:"Analysis output from the test run: 52 vehicles, speed histogram and counts by type"}
+]},
+{w:0,k:'web',h:'--c3',n:'1-2 Epiplokidees Overhaul',t:'Front-end overhaul of epiplokidees.gr, a production e-commerce store. I fixed layout and typography bugs, made it responsive on mobile and desktop, built the missing pages, and wrote custom CSS and JavaScript to beat WordPress and Elementor defaults, including an off-canvas mobile filter.',st:[['Complexity',70],['Fun',80]],it:['WordPress','Elementor','Custom CSS','JavaScript','Responsive'],link:'https://epiplokidees.gr',shots:[
+  {b:"images/web/01-before.jpg",src:"images/web/01-after.jpg",cap:"Navigation: mega menu with sub-categories, brand logos and an offers button",ar:"1200/299"},
+  {b:"images/web/02-before.jpg",src:"images/web/02-after.jpg",cap:"Media Strom collections: static cards became hover-flip cards",ar:"1200/559"},
+  {b:"images/web/03-before.jpg",src:"images/web/03-after.jpg",cap:"Cart: translated labels, cleaner layout and the new menu",ar:"1200/490"},
+  {b:"images/web/04-before.jpg",src:"images/web/04-after.jpg",cap:"Product filters: price range follows the category, plus colour swatches",ar:"1200/490"},
+  {b:"images/web/05-before.jpg",src:"images/web/05-after.jpg",cap:"Product tab: placeholder text replaced by real shipping and payment info",ar:"1200/559"},
+  {b:"images/web/06-before.jpg",src:"images/web/06-after.jpg",cap:"Checkout: fully translated fields, labels and order button",ar:"1200/490"},
+  {b:"images/web/07-before.jpg",src:"images/web/07-after.jpg",cap:"Terms of use: a wall of text became collapsible questions",ar:"1200/487"},
+  {b:"images/web/08-before.jpg",src:"images/web/08-after.jpg",cap:"Returns: conditions and the 14-day rule as scannable cards",ar:"1200/487"},
+  {b:"images/web/09-before.jpg",src:"images/web/09-after.jpg",cap:"Cookies policy: categories explained in numbered cards",ar:"1200/487"},
+  {b:"images/web/10-before.jpg",src:"images/web/10-after.jpg",cap:"Contact: English template replaced by contact cards, hours and a map",ar:"1200/559"}
+]},
+{w:0,k:'disk',h:'--c4',n:'1-3 Disk File Search',t:'Data Structures course (TUC), assignment 1, in Java. I stored records in binary files on disk, one page at a time, and compared three ways to find a key: a sequential scan of the data file, a scan of an index file of key and page pairs, and a binary search over a sorted index file. With 27- and 55-byte records and from 50 to 200,000 records, I measured average page reads and search time over 1,000 keys. At 200,000 records the plain scan needs about 37,500 page reads (199 ms), the unsorted index 4,700 (28 ms), and the sorted index only about 12 (0.09 ms). The first two curves are linear and the third is logarithmic, as the theory says.',st:[['Complexity',55],['Fun',50]],it:['Java','Binary files','Paging','Indexing','Binary search','Benchmarking'],shots:[
+  {src:"images/dsa1/organisations.png",cap:"Three ways to organise the files: scan the data, scan an index, binary-search a sorted index"},
+  {src:"images/dsa1/results.png",cap:"Page reads and search time vs number of records (log scale)"}
+]},
+{w:0,k:'kd',h:'--c2',n:'1-4 kd-tree vs Quadtree',t:'Data Structures course (TUC), assignment 2, in Java: a kd-tree and a point-region quadtree for 2D points, each with insert and search. I inserted from 200 up to 100,000 random points and measured the average depth reached by successful and unsuccessful searches, plus search times. Both follow log M. At 100,000 points the quadtree averages about 9 levels and the kd-tree about 21, against theoretical 8.3 and 16.6, because neither tree is perfectly balanced and the kd-tree less so. Counting operations per level (about 8 for the kd-tree, 19 for the quadtree), the two end up close in speed, so neither clearly wins. The kd-tree is adapted from a public reference, and the quadtree follows the same structure.',st:[['Complexity',65],['Fun',60]],it:['Java','kd-tree','Quadtree','Recursion','Benchmarking','O(log n)'],shots:[
+  {src:"images/dsa2/partitions.png",cap:"How each tree splits the plane (illustration with 14 random points)"},
+  {src:"images/dsa2/depth.png",cap:"Average search depth vs number of points, with the log2 and log4 theory curves"}
+]},
+{w:0,k:'bplus',h:'--c3',n:'1-5 B+ Tree Word Index',t:'Data Structures course (TUC), assignment 3, in Java: a B+ tree used as an inverted index. I started from the public B+ tree implementation provided with the assignment, made its order configurable, adjusted when nodes split, and added counters for node accesses and key comparisons. The app indexes every word of two text files with its file and character positions (3,908 keys), then searches random words. With order 10 a search visits 4 nodes and makes 17.55 key comparisons on average, and with order 20, 4 nodes and 22.16 comparisons. Both match the height range the theory predicts for 3,908 keys.',st:[['Complexity',70],['Fun',60]],it:['Java','B+ tree','Inverted index','Counters','CLI app'],shots:[
+  {src:"images/dsa3/console.png",cap:"The app measuring searches for tree order 10 and order 20"},
+  {src:"images/dsa3/height.png",cap:"Theoretical tree height for 3,908 keys against the measured 4 node accesses"}
+]},
+{w:0,k:'tweet',h:'--c1',n:'1-6 Twitter Viewer and Editor',t:'Software development course assignment, done in a team of two: a command-line Twitter Viewer and Editor in Python over a file of 300,000 tweets, taken through five phases: development, logging, profiling, refactoring and unit testing. I worked on development, profiling and unit testing. Profiling with line_profiler and memory_profiler showed that loading the file takes about 35 seconds and pushes memory from 38 MiB to 3,720 MiB, while everything else is either waiting for the user or takes about a millisecond, so the next step is to read tweets on demand instead of loading the whole file. Ten unit tests cover create, read, update, delete, navigation and saving, and all pass.',st:[['Complexity',50],['Fun',65]],it:['Python','line_profiler','memory_profiler','unittest','logging','JSON'],shots:[
+  {src:"images/py/phases.png",cap:"The five phases of the assignment and the ones I worked on"},
+  {src:"images/py/time-profile.png",cap:"line_profiler: loading the file dominates, every command after that is fast"},
+  {src:"images/py/memory-profile.png",cap:"memory_profiler: loading 300,000 tweets takes memory from 38 MiB to 3,720 MiB"},
+  {src:"images/py/unit-tests.png",cap:"The unit test runs: 10 tests, all passing"}
+]},
+{w:0,k:'db',h:'--c3',n:'1-7 University Database (SQL)',t:'Databases course (TUC, PLH 303), done in a team of two on a PostgreSQL database for a university department of about 28 tables. Phase A: functions and triggers on the department schema, for thesis insertion, registration status checks and student grades per study program. Phase B: tune a heavy five-table query (cities, people, students, program enrolments and programs) over about 1.9 million students. EXPLAIN (ANALYZE, BUFFERS) showed a sequential scan of the Student table reading 86,649 buffers, so we added a B-tree index on entry_date. Average execution time fell from 34.6 s to 4.5 s (-87%) and the top planner cost from 459,932 to 207,573 (-55%). Indexes on the foreign keys, clustering and join reordering did not help, and switching join algorithms on and off showed how the planner reacts. We also wrote data generators, and generating join rows became extremely slow at scale.',st:[['Complexity',70],['Fun',55]],it:['PostgreSQL','SQL','PL/pgSQL','Triggers','EXPLAIN ANALYZE','Indexing'],shots:[
+  {src:"images/sql/tables.png",cap:"The query joins five tables and filters on Student, Cities and Program"},
+  {src:"images/sql/query.png",cap:"The query, with a second branch listing the cities that do not qualify"},
+  {src:"images/sql/scan-before-after.png",cap:"Query plan before and after the index: 86,649 buffers read down to 5,017"},
+  {src:"images/sql/results.png",cap:"Three runs before and after the index, and the planner cost"},
+  {src:"images/sql/experiments.png",cap:"Everything we tried: join algorithms, the index and clustering"}
+]},
+{w:0,k:'spark',h:'--c2',n:'1-8 Spark Analytics (Scala)',t:'Functional Programming, Analytics and Applications course (INF 424), final assignment, done in a team of two in Scala on Apache Spark with HDFS. Scenario 1 uses RDDs on the Reuters news collection: documents per category, documents per term and documents with both, then the Jaccard index for every category and stem pair, written to HDFS by one job of ten stages. Scenario 2 uses DataFrames on ship position logs from stations around Piraeus and Syros: positions per station per day, the vessel with most positions, the average speed of vessels seen at two stations on the same day, the average gap between heading and course, and the three most common statuses. We followed jobs, stages and tasks in the Spark UI, sorted transformations into narrow and wide, and compared logical and physical plans: with RDDs they match, with DataFrames Catalyst rewrites them, and the queries ran as 13 jobs instead of the 10 or 11 we expected. When 8 tasks failed on the shared cluster (exit code 143, memory pressure), a resubmit ran clean.',st:[['Complexity',75],['Fun',65]],it:['Scala','Apache Spark','RDDs','DataFrames','HDFS','Spark UI','Catalyst'],shots:[
+  {src:"images/spark/dag.png",cap:"Spark UI: the Jaccard index job (RDDs) is split into 10 stages"},
+  {src:"images/spark/code-steps.png",cap:"RDD code: document and category pairs, then documents per category"},
+  {src:"images/spark/narrow-wide.jpg",cap:"Narrow vs wide transformations: shuffles start new stages"},
+  {src:"images/spark/jobs.png",cap:"Spark UI: the five DataFrame queries ran as 13 jobs"},
+  {src:"images/spark/q1.png",cap:"DataFrame query Q1 and the stages it creates"},
+  {src:"images/spark/explain.png",cap:"explain(true): parsed, analysed and optimised logical plans, then the physical plan"}
+]},
+{w:1,k:'arm',h:'--c2',n:'2-2 Gaze AR Robot Arm (Thesis)',t:'Diploma thesis: control a robot arm with your eyes. In a simulation-based AR framework you look at an object to select it (dwell or blink), place its virtual clone where it should go, and a simulated Niryo One plans and runs the pick-and-place. Unity on Magic Leap 2 talks to ROS and MoveIt, GPD proposes grasps and an XGBoost model (55 features, 82.3% accuracy) ranks them by scene context. In 30 grasp trials success rose from 36.6% to 86.6%. 12 users rated it 91 to 92 on a SUS-equivalent scale, and 11 of 12 preferred dwell.',st:[['Complexity',95],['Fun',85]],it:['Unity','Magic Leap 2','ROS / MoveIt','GPD','XGBoost','Optuna','Eye tracking','Simulation'],link:'thesis/diploma-thesis.pdf',vid:'images/thesis/video.mp4',lt:'READ THESIS (PDF) &gt;',shots:[
+  {src:"images/thesis/01-preview.jpg",cap:"Application preview: the simulated Niryo One arm and the gaze UI, seen through Magic Leap 2"},
+  {src:"images/thesis/02-architecture.jpg",cap:"System architecture: AR interface, grasp planning and ROS robot control"},
+  {src:"images/thesis/x7-workflow.jpg",cap:"End-to-end workflow: gaze, point cloud, GPD + ML, placement, planning, execution and feedback"},
+  {src:"images/thesis/03-blink-dwell.jpg",cap:"Pick a gaze method: blink or dwell"},
+  {src:"images/thesis/04-scene-select.jpg",cap:"Pick a scene: simple or complex"},
+  {src:"images/thesis/x8-marker.jpg",cap:"An ArUco marker on the table anchors the virtual scene to the real world"},
+  {src:"images/thesis/x1-gaze-ray.jpg",cap:"How it works: the gaze ray hits the Select button and the fixation point is computed"},
+  {src:"images/thesis/x9-point-cloud.jpg",cap:"Point cloud: surface sampling, Unity to robot frame, sent over TCP to the GPD server"},
+  {src:"images/thesis/05-flowchart.jpg",cap:"Flow of scene setup and object selection"},
+  {src:"images/thesis/06-virtual-clone.jpg",cap:"Target selected: a virtual clone appears to set the placement"},
+  {src:"images/thesis/07-place-1.jpg",cap:"Placement: move the clone with your gaze"},
+  {src:"images/thesis/08-place-2.jpg",cap:"Placement: lock the position with a blink"},
+  {src:"images/thesis/x3-trajectory-stages.jpg",cap:"MoveIt plans five stages: pre-grasp, grasp, pick-up, place, return"},
+  {src:"images/thesis/09-planning.jpg",cap:"MoveIt plans the trajectory"},
+  {src:"images/thesis/10-success.jpg",cap:"Trajectory executed, live feedback in AR"},
+  {src:"images/thesis/11-failure.jpg",cap:"Planning failed: the cause is shown (e.g. unreachable target)"},
+  {src:"images/thesis/x4-pre-grasp.jpg",cap:"If a vertical approach fails, the system tries other offsets, then closes the gripper on contact"},
+  {src:"images/thesis/12-gpd-grasps.jpg",cap:"GPD: top ten grasp candidates on the object point cloud"},
+  {src:"images/thesis/x2-combined-pipeline.jpg",cap:"Combined pipeline: point cloud to GPD to XGBoost to one final grasp"},
+  {src:"images/thesis/13-data-pipeline.jpg",cap:"Offline data collection for the grasp-evaluation model"},
+  {src:"images/thesis/14-ros-sync.jpg",cap:"Obstacles synced into the ROS planning scene"},
+  {src:"images/thesis/15-confusion.jpg",cap:"Optimized XGBoost: confusion matrix, 82.3% accuracy"},
+  {src:"images/thesis/x10-model-selection.jpg",cap:"Model selection: Random Forest, XGBoost, LightGBM and CatBoost compared"},
+  {src:"images/thesis/x6-grasp-trials.jpg",cap:"30 grasp trials: baseline 36.6% vs ML ranking 86.6%"},
+  {src:"images/thesis/16-times.jpg",cap:"Task time per method: dwell is faster and steadier than blink"},
+  {src:"images/thesis/x11-gaze-results.jpg",cap:"Gaze evaluation: success rates, NASA-TLX and SEQ for blink vs dwell"},
+  {src:"images/thesis/17-usability.jpg",cap:"Usability and ease scores, simple vs complex scene"}
+]},
+{w:1,k:'alpha',h:'--c4',n:'2-3 Alpha 2 Robot Dialogue',t:'Robotics course project at TUC, written in Java as an Android app for the UBTECH Alpha 2 humanoid robot used by the Kouretes team. The app listens through the speech recognition of the robot, online and with an offline grammar, and turns the head towards the speaker using the sound direction. It matches what it hears against known questions by word overlap with a confidence threshold of 0.25, keeps the last 10 questions as context, and answers with speech and a motion, so a follow-up why gets a different reply depending on the previous question. Motions come from the stored actions and dances of the robot or from custom motion files (.ubx).',st:[['Complexity',65],['Fun',95]],it:['Java','Android','Alpha 2','Speech recognition','Dialogue','Motion files'],link:'https://www.intelligence.tuc.gr/~robots/ARCHIVE/2023w/projects/salexiou1/',lt:'PROJECT PAGE (TUC) &gt;',vid:'images/robot/video.mp4',poster:'images/robot/poster.jpg',shots:[
+  {src:"images/robot/frames.jpg",cap:"The Alpha 2 during the demo"},
+  {src:"images/robot/architecture.png",cap:"How the app is organised: speech and sound direction in, dialogue and motion out"},
+  {src:"images/robot/dialogue.png",cap:"Context-aware dialogue: the answer to why depends on the previous question"}
+]},
+{w:1,k:'ball',h:'--c2',n:'2-4 NAO Robot Soccer',t:'Autonomous Agents course project (TUC), simulated in Webots, with a Java controller for NAO robots in a RoboCup soccer match. I studied the provided controller and extended it: the field player lines up the ball with its shooting foot using side steps and turns, then plays the shoot motion, and after three shots it wipes its forehead before the next one, for a touch of realism. I gave the goalkeeper the same shot, so it steps along the goal line and, when the ball comes close, steps forward and kicks it away. In the demo the goalkeeper reacts a little late and the other team scores. I also tried to spot other robots by jersey colour with the camera blob finder, but estimating distances and avoiding robots was too hard to finish.',st:[['Complexity',55],['Fun',90]],it:['Java','Webots','NAO','RoboCup','Motions','Camera'],vid:'images/nao/video.mp4',poster:'images/nao/poster.jpg',shots:[
+  {src:"images/nao/frames.jpg",cap:"The match in Webots: the attacker, the goal and the goalkeeper"},
+  {src:"images/nao/field-player.png",cap:"The field player loop: search, approach, line up, shoot"},
+  {src:"images/nao/goalkeeper.png",cap:"The goalkeeper: positioning along the goal line and clearing the ball"}
+]},
+{w:1,k:'epuck',h:'--c3',n:'2-5 e-puck Maze Wall Following',t:'Autonomous Agents course lab (TUC), in Webots with e-puck robots in a maze, controllers written in Java. I worked with the weights of the sensor-based controller and reversed the motor signs so that the robot drives backwards. The two controllers, Rat0 and Rat1, follow the left and the right wall by watching the side and rear distance sensors, and turn when the wall is lost or an obstacle appears ahead. The video runs both robots side by side in the same maze. The lab also asked why wall following can solve a maze: it works when the maze is simply connected, and it can circle forever when the goal or the start sits on an island of walls.',st:[['Complexity',45],['Fun',70]],it:['Java','Webots','e-puck','Wall following','Distance sensors'],vid:'images/epuck/video.mp4',poster:'images/epuck/poster.jpg',shots:[
+  {src:"images/epuck/maze.jpg",cap:"Rat0 and Rat1 in the maze, seen from above in Webots"},
+  {src:"images/epuck/sensors.png",cap:"The two wall-following variants and the sensors they watch"}
+]},
+{w:2,k:'hex',h:'--c4',n:'3-1 HexThello AI',t:'Course project (AI, TUC): a player for HexThello, a Reversi-style game on a 169-cell hexagonal board, connected to the game server through a socket. It runs minimax with alpha-beta pruning at depth 5 and a hand-built evaluation: mobility, coin parity, the six corners and disc stability, with weights that switch once 70 discs are on the board. Pruning kept the same moves but cut a full game from over 10 minutes to about 2. It beat a random player in all 10 test games, averaging 159 to 10 with the phase-based weights. Singular extensions and ProbCut-style forward pruning were tested and left out because they played worse.',st:[['Complexity',75],['Fun',90]],it:['C','Minimax','Alpha-Beta','Heuristics','Sockets','Game AI'],shots:[
+  {src:"images/hex/board-corners.jpg",cap:"The hexagonal board with its six corners, which can never be flipped"},
+  {src:"images/hex/stability-neighbours.jpg",cap:"Neighbouring cells of (i, j), used to decide whether a disc is stable"},
+  {src:"images/hex/midgame.jpg",cap:"A game in progress against the random player"},
+  {src:"images/hex/results.png",cap:"10 games vs random: 10 wins. Search techniques tested: plain alpha-beta played best"},
+  {src:"images/hex/final-win.jpg",cap:"Final screen: white (our player) wins 169 to 0"}
+]},
+{w:2,k:'pca',h:'--c1',n:'3-2 PCA, LDA and Bayes',t:'Course project (Statistical Modelling and Pattern Recognition, TUC), done in a team of two in MATLAB and Python. We implemented PCA on breast-cancer data and on 5,000 face images, rebuilding faces from 10 to 200 components, plus Fisher LDA for two classes and for the three Iris classes, and showed where LDA separates classes that PCA mixes. We also drew Bayes decision boundaries for different priors and covariances, and built a Bayes classifier for MNIST digits from hand-made features: the bounding-box aspect ratio alone gave 95.45% on digits 1 vs 2.',st:[['Complexity',65],['Fun',60]],it:['MATLAB','Python','PCA','LDA','Bayes','Eigenfaces'],shots:[
+  {src:"images/pr1/pca-components.jpg",cap:"PCA on breast-cancer data: standardised samples and the two principal components"},
+  {src:"images/pr1/faces.jpg",cap:"5,000 face images: the first 100 of the dataset"},
+  {src:"images/pr1/eigenfaces.jpg",cap:"The first 36 principal components (eigenfaces)"},
+  {src:"images/pr1/face-reconstruction.jpg",cap:"Faces rebuilt from 10, 50 and 200 components"},
+  {src:"images/pr1/pca-vs-lda.jpg",cap:"PCA vs LDA on the same data: LDA keeps the two classes apart"},
+  {src:"images/pr1/iris-lda.jpg",cap:"Iris: three classes projected to 2D with LDA"},
+  {src:"images/pr1/bayes-boundaries.jpg",cap:"Bayes decision boundaries for priors from 0.1 to 0.9"},
+  {src:"images/pr1/aspect-ratio.jpg",cap:"MNIST feature: bounding-box aspect ratio, 95.45% accuracy on digits 1 vs 2"}
+]},
+{w:2,k:'cnn',h:'--c3',n:'3-3 Perceptron to CNN',t:'Second project from the same course, also in a team of two and mostly in Python. We coded a batch Perceptron, logistic regression with a hand-derived gradient (89% training accuracy on admission data), maximum-likelihood Gaussian estimates (biased and unbiased), and K-means from scratch for image colour compression. The last part was a Fashion-MNIST CNN in Keras: six optimizers compared on a dense baseline (best: adamax, 88.8%), then a convolutional net with batch norm placed before ReLU and dropout reached 94.28%.',st:[['Complexity',70],['Fun',70]],it:['Python','Keras','CNN','K-means','Logistic regression','Perceptron'],shots:[
+  {src:"images/pr2/perceptron.jpg",cap:"Batch Perceptron: decision boundaries on separable and overlapping classes"},
+  {src:"images/pr2/logistic.jpg",cap:"Logistic regression: admitted vs not admitted, with the learned boundary"},
+  {src:"images/pr2/kmeans.jpg",cap:"K-means colour compression with 6 and 26 colours"},
+  {src:"images/pr2/fashion-samples.jpg",cap:"Fashion-MNIST: ten clothing classes"},
+  {src:"images/pr2/cnn-architecture.jpg",cap:"The CNN architecture we implemented"},
+  {src:"images/pr2/accuracy.png",cap:"Accuracy: dense baseline vs CNN with BatchNorm and Dropout"},
+  {src:"images/pr2/cnn-predictions.jpg",cap:"Predictions of the final CNN (94.28% accuracy)"}
+]},
+{w:2,k:'mesh',h:'--c2',n:'3-4 Neural Surface Reconstruction',t:'Generative AI course (INF 426), assignment 1: rebuild a 3D surface from a point cloud with normals. First a naive implicit function, the signed distance to the tangent plane of the nearest point found with a KD-tree, then marching cubes. Then a DeepSDF-style network: an 8-layer MLP with weight norm, LeakyReLU, dropout and a skip connection that feeds the input in again, trained with a clamped L1 loss to predict signed distance. On the 500- and 1000-point bunny and on a sphere, the network gives smooth surfaces where the naive method is blocky and noisy.',st:[['Complexity',85],['Fun',90]],it:['Python','PyTorch','KD-tree','DeepSDF','Marching cubes','SDF'],shots:[
+  {src:"images/sdf/compare-1.jpg",cap:"1000-point bunny: naive method (left) vs neural network (right)"},
+  {src:"images/sdf/compare-2.jpg",cap:"500-point bunny: the network still gives a smooth surface"},
+  {src:"images/sdf/compare-3.jpg",cap:"Sphere: faceted with the naive method, smooth with the network"},
+  {src:"images/sdf/decoder.png",cap:"The decoder: 8 fully connected layers with a skip connection"}
+]},
+{w:2,k:'noise',h:'--c1',n:'3-5 Diffusion Models',t:'Generative AI course (INF 426), assignment 2: diffusion models. First a DDPM on a 2D Swiss-roll toy set (Chamfer distance 19.17), then an image DDPM with a U-Net (residual blocks, attention, time embedding), a DDPM noise scheduler and optional classifier-free guidance, trained on animal faces. With no GPU available I trained it for 10,000 steps on a CPU, which took about 26 hours, and measured an FID of 65.6.',st:[['Complexity',90],['Fun',85]],it:['Python','PyTorch','DDPM','U-Net','FID','Chamfer distance'],shots:[
+  {src:"images/ddpm/swiss-roll.png",cap:"DDPM on a 2D Swiss roll: generated samples follow the target distribution"},
+  {src:"images/ddpm/loss-curve.png",cap:"Training loss on the Swiss roll"},
+  {src:"images/ddpm/samples.png",cap:"Image DDPM: 15 generated animal faces (FID 65.6, 10,000 steps on a CPU)"}
+]},
+{w:2,k:'game',h:'--c1',n:'3-6 Ilomilo (Unity Puzzle Game)',t:'Unity 3D puzzle adventure written in C#, with three levels. I implemented the core game mechanics: interactive environments (chests, levers, keys and notes that go into an inventory), dynamic camera controls, and custom AI behaviours for the non-playable characters, a guide who talks you through the story and zombies that attack when they see you. The video shows all three levels: escaping a mine against a countdown, crossing a haunted forest full of zombies, and finding the key and the chest in a stone hall with levers.',st:[['Complexity',80],['Fun',95]],it:['C#','Unity','3D','Camera control','NPC AI','Puzzles'],vid:'images/ilomilo/video.mp4',poster:'images/ilomilo/poster.jpg'},
+{
+  w: 2,
+  k: 'hero',
+  h: '--c3',
+  n: '3-6 Super Mario PPO Agent',
+  t: 'An autonomous agent trained to play Super Mario Bros using the Proximal Policy Optimization (PPO) algorithm. Developed for the Autonomous Agents course (INF 412) at TUC. The environment was preprocessed using grayscaling and frame stacking to provide temporal context, allowing the agent to perceive motion. To manage complexity, the action space was simplified using the SIMPLE_MOVEMENT wrapper. The implementation was done in Python (Jupyter Notebooks) using the stable-baselines3 library and a CnnPolicy. Due to hardware constraints, the model was trained on a CPU for 10,000 frames with a learning rate of 1e-6. Training metrics were logged via TensorBoard; despite the short training time, the loss graphs showed a downward trend and the explained variance an upward trend, indicating learning and convergence. A fully trained agent would require approximately 3-4 million steps.',
+  st: [['Complexity', 85], ['Fun', 95]],
+  it: ['Python', 'Reinforcement Learning', 'PPO', 'TensorBoard', 'OpenAI Gym', 'stable-baselines3'],
+  link: 'https://www.intelligence.tuc.gr/~robots/ARCHIVE/2023w/projects/salexiou1/',
+  lt: 'PROJECT PAGE &gt;',
+  vid: 'images/ppo/Untrained_Mario.mp4',
+  shots: [
+    {src: "images/ppo/Initial_environment.jpg", cap: "Initial Super Mario Bros environment before preprocessing"},
+    {src: "images/ppo/Grayscaled_environment.jpg", cap: "Grayscaled frames to reduce processing complexity and dimensionality"},
+    {src: "images/ppo/StackingTheFrames_environment.jpg", cap: "Frame stacking applied so the agent perceives motion and velocity"},
+    {src: "images/ppo/TrainingInfo_Example.jpg", cap: "Training metrics and reward tracking logged via TensorBoard"},
+    {src: "images/ppo/loss.jpg", cap: "Graph of Loss: shows a downward trend over the 10,000 steps, indicating learning"},
+    {src: "images/ppo/entropy_loss.jpg", cap: "Graph of Entropy Loss tracked during training"},
+    {src: "images/ppo/explained_variance.jpg", cap: "Graph of Explained Variance: shows an upward trend, indicating model convergence"}
+  ]
+}];
+
+var WN=['Software','Robotics','AI & Games'];
+L.sort(function(a,b){return a.w-b.w});
+
+var map=$('#map'), me=$('#me'), nodes=[], cur=-1, cw=0, seen={}, timer, tabs=[];
+
+L.forEach(function(l,i){
+  var b=document.createElement('button');
+  b.className='node';
+  b.type='button';
+  b.style.setProperty('--hue','var('+l.h+')');
+  b.innerHTML='<canvas width="8" height="8"></canvas><span>'+l.n+'</span>';
+  b.onclick=function(){go(i)};
+  map.appendChild(b);
+  nodes.push(b);
+});
+
+function setWorld(w){
+  cw=w; var n=0;
+  tabs.forEach(function(t,j){
+    t.classList.toggle('on',j===w);
+    t.setAttribute('aria-pressed',j===w)
+  });
+  nodes.forEach(function(b,i){
+    var s = L[i].w !== w;
+    b.hidden = s;
+    if(!s) n++;
+  });
+  map.classList.toggle('solo', n<2);
+  map.classList.toggle('many', n>4);
+}
+
+WN.forEach(function(name,w){
+  var t=document.createElement('button');
+  t.type='button';
+  t.textContent='World '+(w+1)+': '+name;
+  t.onclick=function(){
+    setWorld(w);
+    var f=L.findIndex(function(l){return l.w===w});
+    if(f>=0) go(f);
+  };
+  $('#tabs').appendChild(t);
+  tabs.push(t);
+});
+
+setWorld(0);
+
+function paint(){
+  nodes.forEach(function(b,i){draw(b.firstChild,L[i].k,css(L[i].h))});
+  draw($('#hero'),'hero',css('--c1'));
+  draw(me,'hero',css('--c3'));
+  stars();
+}
+
+var ac;
+function blip(f){
+  if(!sfx) return;
+  try{
+    ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+    var o=ac.createOscillator(), g=ac.createGain();
+    o.type='square';
+    o.frequency.value=f;
+    g.gain.value=.04;
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start();
+    o.stop(ac.currentTime+.08);
+  }catch(e){}
+}
+
+var sfx=true;
+$('#sfx').onclick=function(){
+  sfx=!sfx;
+  this.textContent='SFX: '+(sfx?'on':'off');
+  blip(660);
+};
+
+function toast(m){
+  var t=$('#toast');
+  t.textContent=m;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2600);
+}
+
+var sT, si=0;
+function initShow(l){
+  clearInterval(sT);
+  if(!l.shots||!l.shots.length) return;
+  
+  var n=l.shots.length, im=$('#sl'), sb=$('#sb'), frm=$('#frm'), hd=$('#hd'),
+      ct=$('#ct'), pp=$('#pp'), pg=$('#pg'), sh=$('#show'), bb=$('#bb'), ba=$('#ba'),
+      cmp=!!l.shots[0].b, play=!reduce&&!cmp, D=2800, t0=Date.now(), pos=50, drag=false;
+      
+  function cap(s){ return typeof s==='string' ? {src:s,cap:''} : s; }
+  
+  function mv(p){
+    pos=Math.max(0,Math.min(100,p));
+    sb.style.clipPath='inset(0 '+(100-pos)+'% 0 0)';
+    hd.style.left=pos+'%';
+  }
+  
+  function set(k){
+    si=(k+n)%n;
+    var s=cap(l.shots[si]);
+    im.src=s.src;
+    im.alt=l.n+' screenshot '+(si+1);
+    if(cmp){
+      sb.src=s.b;
+      sb.alt=im.alt+' (before)';
+      frm.style.aspectRatio=s.ar||'';
+      mv(50);
+    }
+    ct.textContent=(si+1)+' / '+n+(s.cap?' - '+s.cap:'');
+    t0=Date.now();
+    pg.style.width='0';
+  }
+  
+  function upd(){
+    pp.textContent=play?'||':'>';
+    pp.setAttribute('aria-label',play?'Pause':'Play');
+  }
+  
+  if(cmp){
+    frm.dataset.cmp='1';
+    frm.style.width='100%';
+    [sb,hd,bb,ba].concat([].slice.call(frm.querySelectorAll('.lab'))).forEach(function(x){x.hidden=false});
+    
+    var at=function(e){var r=frm.getBoundingClientRect();mv((e.clientX-r.left)/r.width*100)};
+    var mvH=function(e){if(drag)at(e)}, upH=function(){drag=false;removeEventListener('pointermove',mvH);removeEventListener('pointerup',upH);removeEventListener('pointercancel',upH)};
+    
+    frm.ondragstart=function(){return false};
+    frm.onpointerdown=function(e){
+      e.preventDefault(); drag=true; at(e);
+      addEventListener('pointermove',mvH);
+      addEventListener('pointerup',upH);
+      addEventListener('pointercancel',upH);
+    };
+    bb.onclick=function(){mv(100)};
+    ba.onclick=function(){mv(0)};
+  }
+  
+  $('#pv').onclick=function(){set(si-1)};
+  $('#nx').onclick=function(){set(si+1)};
+  pp.onclick=function(){play=!play;upd();t0=Date.now()};
+  
+  sh.onmouseenter=function(){sh.h=1};
+  sh.onmouseleave=function(){sh.h=0;t0=Date.now()};
+  
+  set(0); upd();
+  sT=setInterval(function(){
+    if(!play||sh.h) return;
+    var p=(Date.now()-t0)/D;
+    pg.style.width=Math.min(p*100,100)+'%';
+    if(p>=1) set(si+1);
+  },50);
+}
+
+function go(i){
+  i=(i+L.length)%L.length;
+  cur=i;
+  var l=L[i];
+  if(l.w!==cw) setWorld(l.w);
+  blip(440+i*110);
+  
+  nodes.forEach(function(b,j){b.classList.toggle('on',j===i)});
+  var b=nodes[i];
+  me.style.left=(b.offsetLeft+b.offsetWidth/2-32)+'px';
+  me.style.top=(b.offsetTop-80)+'px';
+  
+  var d=$('#dlg');
+  d.style.setProperty('--hue','var('+l.h+')');
+  $('#dt').textContent='LEVEL '+l.n;
+  
+  $('#more').innerHTML='<div class="stats">'+l.st.map(function(s){return'<div><span>'+s[0]+'</span><span class="bar"><i style="width:'+s[1]+'%"></i></span></div>'}).join('')+'</div><div class="items">'+l.it.map(function(x){return'<b>'+x+'</b>'}).join('')+'</div>'+(l.link?'<p><a class="btn px s" style="display:inline-block;margin-top:1rem" href="'+l.link+'" target="_blank" rel="noopener">'+(l.lt||'VISIT SITE &gt;')+'</a></p>':'')+(l.vid?'<video controls preload="metadata" playsinline onerror="this.hidden=true"'+(l.poster?' poster="'+l.poster+'"':'')+' style="display:block;max-width:min(100%,900px);max-height:75vh;margin-top:1rem;border:4px solid var(--hue)" src="'+l.vid+'"></video>':'')+(l.shots&&l.shots.length?'<div class="show" id="show"><div class="frame" id="frm"><img id="sl" alt="" draggable="false"><img id="sb" alt="" class="bef" draggable="false" hidden><span class="lab lb" hidden>BEFORE</span><span class="lab la" hidden>AFTER</span><div id="hd" hidden></div></div><div class="ctl"><button type="button" id="pv" aria-label="Previous">&lt;</button><button type="button" id="pp">||</button><button type="button" id="nx" aria-label="Next">&gt;</button><button type="button" id="bb" hidden>BEFORE</button><button type="button" id="ba" hidden>AFTER</button><span id="ct"></span></div><span class="bar" style="display:block"><i id="pg" style="width:0"></i></span></div>':'');
+  initShow(l);
+  
+  clearInterval(timer);
+  var tx=$('#txt'), n=0;
+  if(reduce){
+    tx.textContent=l.t;
+  }else{
+    tx.textContent='';
+    timer=setInterval(function(){
+      tx.textContent=l.t.slice(0,++n);
+      if(n>=l.t.length) clearInterval(timer);
+    },16);
+  }
+  
+  if(!seen[i]){
+    seen[i]=1;
+    nodes[i].classList.add('cleared'); // <-- Prosthetei to clear badge otan to paizei!
+    var c=Object.keys(seen).length, p=Math.round(c/L.length*100);
+    $('.xp i').style.width=p+'%';
+    var g=$('#toEnd');
+    g.textContent=c===L.length ? 'CONTINUE > (ALL CLEARED!)' : 'CONTINUE > (' + c + '/' + L.length + ' CLEARED)';
+    $('.xp').setAttribute('aria-valuenow',p);
+    $('#lv').textContent='LV '+(c+1);
+    toast(c===L.length?'ACHIEVEMENT: ALL LEVELS CLEARED':'+XP');
+    if(c===L.length){
+      $('#cont').classList.add('hot');
+      blip(990);
+    }
+  }
+}
+
+addEventListener('keydown',function(e){
+  var st=document.body.dataset.stage;
+  if(st==='0'){
+    if((e.key==='Enter'||e.key===' ')&&(e.target===document.body||e.target.id==='start')){
+      e.preventDefault();
+      $('#start').click();
+    }
+    return;
+  }
+  if(st!=='2') return;
+  if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}
+  if(e.key==='ArrowLeft'){go(cur<0?0:cur-1);e.preventDefault()}
+});
+
+addEventListener('resize',function(){
+  if(cur>=0 && document.body.dataset.stage==='2'){
+    var b=nodes[cur];
+    me.style.left=(b.offsetLeft+b.offsetWidth/2-32)+'px';
+    me.style.top=(b.offsetTop-80)+'px';
+  }
+});
+
+$('#more').addEventListener('click',function(e){
+  if(e.target.tagName==='IMG' && !e.target.closest('[data-cmp]')){
+    $('#lb img').src=e.target.src;
+    $('#lb').classList.add('on');
+  }
+});
+
+$('#lb').onclick=function(){this.classList.remove('on')};
+addEventListener('keydown',function(e){if(e.key==='Escape') $('#lb').classList.remove('on')});
+
+function stage(n){document.body.dataset.stage=n;scrollTo(0,0)}
+
+$('#start').onclick=function(e){e.preventDefault();blip(880);stage(1)};
+$('#toWorld').onclick=function(){blip(660);stage(2)};
+$('#toEnd').onclick=function(){blip(990);stage(3)};
+$('#backToGame').onclick=function(){blip(660);stage(2)};
+$('#theme').onclick=function(){
+  var r=document.documentElement, d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+  r.dataset.theme=d?'light':'dark';
+  paint();
+};
+
+var sc=$('#stars'), sx=sc.getContext('2d'), W, H, ST=[];
+function stars(){
+  var r=sc.getBoundingClientRect();
+  W=sc.width=r.width;
+  H=sc.height=r.height;
+  ST=[];
+  for(var i=0;i<70;i++){
+    ST.push({x:Math.floor(Math.random()*W/4)*4, y:Math.floor(Math.random()*H/4)*4, s:Math.random()<.2?8:4, p:Math.random()*6});
+  }
+}
+
+function tw(t){
+  if(document.body.dataset.stage!=='0') return;
+  sx.clearRect(0,0,W,H);
+  sx.fillStyle=css('--star');
+  ST.forEach(function(s){
+    sx.globalAlpha=reduce?.6:(Math.sin(t/500+s.p)>0?.9:.3);
+    sx.fillRect(s.x,s.y,s.s,s.s);
+  });
+  sx.globalAlpha=1;
+  if(!reduce) requestAnimationFrame(tw);
+}
+
+addEventListener('resize',stars);
+paint();
+requestAnimationFrame(tw);
+
+var cue=$('#cue');
+function updateCue(){
+  var show=cur>=0 && document.body.dataset.stage==='2' && (scrollY+innerHeight<document.documentElement.scrollHeight-140);
+  cue.hidden=!show;
+}
+cue.addEventListener('click',function(){scrollBy({top:Math.round(innerHeight*.7),behavior:'smooth'})});
+addEventListener('scroll',updateCue,{passive:true});
+addEventListener('resize',updateCue);
+setInterval(updateCue,500);
+
+document.fonts && document.fonts.ready.then(function(){if(cur>=0) go(cur)});
+})();
+</script>
+</body>
+</html>
