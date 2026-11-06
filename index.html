@@ -8,7 +8,7 @@
   <meta property="og:title" content="Stamatios Alexiou - Software Engineer & AI">
   <meta property="og:description" content="I build systems that perceive, learn and interact. Welcome to my interactive portfolio.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://yourwebsite.com/images/preview.jpg"> <!-- Άλλαξε το URL όταν ανέβει -->
+  <meta property="og:image" content="https://yourwebsite.com/images/preview.jpg">
   <meta name="twitter:card" content="summary_large_image">
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
@@ -423,7 +423,7 @@ var L=[
   {src:"images/thesis/x11-gaze-results.jpg",cap:"Gaze evaluation: success rates, NASA-TLX and SEQ for blink vs dwell"},
   {src:"images/thesis/17-usability.jpg",cap:"Usability and ease scores, simple vs complex scene"}
 ]},
-{w:1,k:'alpha',h:'--c4',n:'2-3 Alpha 2 Robot Dialogue',t:'Robotics course project at TUC, written in Java as an Android app for the UBTECH Alpha 2 humanoid robot used by the Kouretes team. The app listens through the speech recognition of the robot, online and with an offline grammar, and turns the head towards the speaker using the sound direction. It matches what it hears against known questions by word overlap with a confidence threshold of 0.25, keeps the last 10 questions as context, and answers with speech and a motion, so a follow-up why gets a different reply depending on the previous question. Motions come from the stored actions and dances of the robot or from custom motion files (.ubx).',st:[['Complexity',65],['Fun',95]],it:['Java','Android','Alpha 2','Speech recognition','Dialogue','Motion files'],link:'https://www.intelligence.tuc.gr/~robots/ARCHIVE/2023w/projects/salexiou1/',lt:'PROJECT PAGE (TUC) &gt;',vid:'images/robot/video.mp4',poster:'images/robot/poster.jpg',shots:[
+{w:1,k:'alpha',h:'--c4',n:'2-3 Alpha 2 Robot Dialogue',t:'Robotics course project at TUC, written in Java as an Android app for the UBTECH Alpha 2 humanoid robot used by the Kouretes team. The app listens through the speech recognition of the robot, online and with an offline grammar, and turns the head towards the speaker using the sound direction. It matches what it hears against known questions by word overlap with a confidence threshold of 0.25, keeps the last 10 questions as context, and answers with speech and a motion, so a follow-up why gets a different reply depending on the previous question. Motions come from the stored actions and dances of the robot or from custom motion files (.ubx).',st:[['Complexity',65],['Fun',95]],it:['Java','Android','Alpha 2','Speech recognition','Dialogue','Motion files'],vid:'images/robot/video.mp4',poster:'images/robot/poster.jpg',shots:[
   {src:"images/robot/frames.jpg",cap:"The Alpha 2 during the demo"},
   {src:"images/robot/architecture.png",cap:"How the app is organised: speech and sound direction in, dialogue and motion out"},
   {src:"images/robot/dialogue.png",cap:"Context-aware dialogue: the answer to why depends on the previous question"}
@@ -535,7 +535,19 @@ WN.forEach(function(name,w){
   t.onclick=function(){
     setWorld(w);
     var f=L.findIndex(function(l){return l.w===w});
-    if(f>=0) go(f);
+    if(f>=0) {
+      cur = f - 1; 
+      nodes.forEach(function(nd){ nd.classList.remove('on'); });
+      updatePos();
+      
+      var d = $('#dlg');
+      d.style.setProperty('--hue', 'var(--line)');
+      $('#dt').textContent = 'WORLD ' + (w+1) + ': ' + name;
+      $('#txt').textContent = 'Use arrow keys or tap a level to start.';
+      $('#more').innerHTML = '';
+      clearInterval(timer);
+      if(typeof sT !== 'undefined') clearInterval(sT);
+    }
   };
   $('#tabs').appendChild(t);
   tabs.push(t);
@@ -686,7 +698,7 @@ function go(i){
   
   if(!seen[i]){
     seen[i]=1;
-    nodes[i].classList.add('cleared'); // <-- Prosthetei to clear badge otan to paizei!
+    nodes[i].classList.add('cleared'); 
     var c=Object.keys(seen).length, p=Math.round(c/L.length*100);
     $('.xp i').style.width=p+'%';
     var g=$('#toEnd');
@@ -715,13 +727,23 @@ addEventListener('keydown',function(e){
   if(e.key==='ArrowLeft'){go(cur<0?0:cur-1);e.preventDefault()}
 });
 
-addEventListener('resize',function(){
-  if(cur>=0 && document.body.dataset.stage==='2'){
+function updatePos(){
+  if(document.body.dataset.stage!=='2') return;
+  if(cur>=0 && nodes[cur] && nodes[cur].classList.contains('on')){
     var b=nodes[cur];
     me.style.left=(b.offsetLeft+b.offsetWidth/2-32)+'px';
     me.style.top=(b.offsetTop-80)+'px';
+  } else {
+    var w=tabs.findIndex(function(t){return t.classList.contains('on')});
+    var f=L.findIndex(function(l){return l.w===w});
+    if(f>=0){
+      var b=nodes[f];
+      me.style.left=Math.max(0, b.offsetLeft-80)+'px';
+      me.style.top=(b.offsetTop-80)+'px';
+    }
   }
-});
+}
+addEventListener('resize', updatePos);
 
 $('#more').addEventListener('click',function(e){
   if(e.target.tagName==='IMG' && !e.target.closest('[data-cmp]')){
@@ -733,7 +755,11 @@ $('#more').addEventListener('click',function(e){
 $('#lb').onclick=function(){this.classList.remove('on')};
 addEventListener('keydown',function(e){if(e.key==='Escape') $('#lb').classList.remove('on')});
 
-function stage(n){document.body.dataset.stage=n;scrollTo(0,0)}
+function stage(n){
+  document.body.dataset.stage=n;
+  scrollTo(0,0);
+  if(n==2) setTimeout(updatePos, 50);
+}
 
 $('#start').onclick=function(e){e.preventDefault();blip(880);stage(1)};
 $('#toWorld').onclick=function(){blip(660);stage(2)};
@@ -782,7 +808,10 @@ addEventListener('scroll',updateCue,{passive:true});
 addEventListener('resize',updateCue);
 setInterval(updateCue,500);
 
-document.fonts && document.fonts.ready.then(function(){if(cur>=0) go(cur)});
+document.fonts && document.fonts.ready.then(function(){
+  if(cur>=0) go(cur);
+  else tabs[0].click();
+});
 })();
 </script>
 </body>
